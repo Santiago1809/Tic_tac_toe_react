@@ -29,16 +29,18 @@ const SQUARE = ({ children, isSelected, updateBoard, index }) => {
     </div>
   )
 }
+
 export default function App() {
   const [board, setBoard] = useState(Array(9).fill(null))
   const [turn, setTurn] = useState(TURNS.X)
   const [winner, setWinner] = useState(null)
+  const [isDraw, setIsDraw] = useState(false)
 
   const checkWinner = (boardToCheck) => {
     for (const combo of WINNER_COMBOS) {
       const [a, b, c] = combo
       if (
-        boardToCheck[a] && // -> x || o
+        boardToCheck[a] &&
         boardToCheck[a] === boardToCheck[b] &&
         boardToCheck[a] === boardToCheck[c]
       ) {
@@ -48,10 +50,15 @@ export default function App() {
     return null
   }
 
+  const checkDraw = (boardToCheck) => {
+    return boardToCheck.every((square) => square !== null)
+  }
+
   const resetGame = () => {
     setBoard(Array(9).fill(null))
     setTurn(TURNS.X)
     setWinner(null)
+    setIsDraw(false)
   }
 
   const updateBoard = (index) => {
@@ -67,8 +74,14 @@ export default function App() {
     const newWinner = checkWinner(newBoard)
     if (newWinner) {
       setWinner(newWinner)
-    } //TODO: Revisar si hay un empate
+    } else {
+      const isDrawGame = checkDraw(newBoard)
+      if (isDrawGame) {
+        setIsDraw(true)
+      }
+    }
   }
+
   return (
     <main className="board">
       <h1>Tic tac toe</h1>
@@ -85,15 +98,23 @@ export default function App() {
         <SQUARE isSelected={turn === TURNS.X}>{TURNS.X}</SQUARE>
         <SQUARE isSelected={turn === TURNS.O}>{TURNS.O}</SQUARE>
       </section>
-      {winner !== null && (
+      {winner !== null && !isDraw && (
         <section className="winner">
           <div className="text">
-            <h2>{winner === false ? 'Empate' : `${winner} ha ganado`}</h2>
-
+            <h2>{`${winner} ha ganado`}</h2>
             <header className="win">
               {winner && <SQUARE>{winner}</SQUARE>}
             </header>
-
+            <footer>
+              <button onClick={resetGame}>Empezar de nuevo</button>
+            </footer>
+          </div>
+        </section>
+      )}
+      {isDraw && (
+        <section className="winner">
+          <div className="text">
+            <h2>Empate</h2>
             <footer>
               <button onClick={resetGame}>Empezar de nuevo</button>
             </footer>
